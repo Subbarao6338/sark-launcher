@@ -50,6 +50,7 @@ import app.lawnchair.ui.preferences.components.controls.WarningPreference
 import app.lawnchair.ui.preferences.components.layout.ExpandAndShrink
 import app.lawnchair.ui.preferences.components.layout.PreferenceGroup
 import app.lawnchair.ui.preferences.components.layout.PreferenceLayout
+import app.lawnchair.ui.preferences.destinations.AppDrawerTabPreferenceItem
 import app.lawnchair.ui.preferences.navigation.AppDrawerHiddenApps
 import app.lawnchair.ui.preferences.navigation.Predictions
 import com.android.launcher3.InvariantDeviceProfile
@@ -78,7 +79,10 @@ fun AppDrawerPreferences(
         Column {
             DrawerLayoutPreference(drawerListAdapter)
             ExpandAndShrink(visible = drawerListAdapter.state.value) {
-                AppDrawerFolderPreferenceItem()
+                Column {
+                    AppDrawerFolderPreferenceItem()
+                    AppDrawerTabPreferenceItem()
+                }
             }
         }
         val hiddenApps = prefs2.hiddenApps.getAdapter().state.value

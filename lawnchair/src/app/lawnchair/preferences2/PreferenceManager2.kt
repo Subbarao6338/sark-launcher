@@ -698,6 +698,11 @@ class PreferenceManager2 @Inject constructor(
         },
     )
 
+    val enableHomescreenFeed = preference(
+        key = booleanPreferencesKey(name = "enable_homescreen_feed"),
+        defaultValue = false,
+    )
+
     val enableFeed = preference(
         key = booleanPreferencesKey(name = "enable_feed"),
         defaultValue = context.resources.getBoolean(R.bool.config_default_enable_feed),
@@ -823,7 +828,7 @@ class PreferenceManager2 @Inject constructor(
 
     val enableLabelInDock = preference(
         key = booleanPreferencesKey(name = "enable_label_dock"),
-        defaultValue = false,
+        defaultValue = true,
     )
 
     val doubleTapGestureHandler = serializablePreference<GestureHandlerConfig>(

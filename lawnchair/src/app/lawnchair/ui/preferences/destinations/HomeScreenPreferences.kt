@@ -146,14 +146,22 @@ fun HomeScreenPreferences(
         }
         val feedAvailable = OverlayCallbackImpl.minusOneAvailable(LocalContext.current)
         val enableFeedAdapter = prefs2.enableFeed.getAdapter()
+        val enableHomescreenFeedAdapter = prefs2.enableHomescreenFeed.getAdapter()
         PreferenceGroup(heading = stringResource(id = R.string.minus_one)) {
             SwitchPreference(
-                adapter = enableFeedAdapter,
-                label = stringResource(id = R.string.minus_one_enable),
-                description = if (feedAvailable) null else stringResource(id = R.string.minus_one_unavailable),
-                enabled = feedAvailable,
+                adapter = enableHomescreenFeedAdapter,
+                label = stringResource(id = R.string.enable_homescreen_feed_label),
+                description = stringResource(id = R.string.enable_homescreen_feed_desc),
             )
-            ExpandAndShrink(visible = feedAvailable && enableFeedAdapter.state.value) {
+            ExpandAndShrink(visible = !enableHomescreenFeedAdapter.state.value) {
+                SwitchPreference(
+                    adapter = enableFeedAdapter,
+                    label = stringResource(id = R.string.minus_one_enable),
+                    description = if (feedAvailable) null else stringResource(id = R.string.minus_one_unavailable),
+                    enabled = feedAvailable,
+                )
+            }
+            ExpandAndShrink(visible = !enableHomescreenFeedAdapter.state.value && feedAvailable && enableFeedAdapter.state.value) {
                 FeedPreference()
             }
         }

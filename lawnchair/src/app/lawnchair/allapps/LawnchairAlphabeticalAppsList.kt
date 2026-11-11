@@ -8,6 +8,9 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import app.lawnchair.data.folder.FolderEntry
 import app.lawnchair.data.folder.model.FolderViewModel
+import app.lawnchair.data.tabs.ActiveTabState
+import app.lawnchair.data.tabs.TabEntry
+import app.lawnchair.data.tabs.service.TabService
 import app.lawnchair.launcher
 import app.lawnchair.preferences.PreferenceManager
 import app.lawnchair.preferences2.PreferenceManager2
@@ -48,6 +51,10 @@ class LawnchairAlphabeticalAppsList<T>(
     private val folderList = mutableListOf<FolderEntry>()
     private val filteredList = mutableListOf<AppInfo>()
 
+    private val tabService by lazy { TabService.INSTANCE.get(context) }
+    private val tabList = mutableListOf<TabEntry>()
+    private var currentTabId = ActiveTabState.ALL_APPS_TAB_ID
+
     init {
         context.launcher.deviceProfile.inv.addOnChangeListener(this)
         (context as? LifecycleOwner)?.lifecycle?.addObserver(this)
@@ -58,6 +65,29 @@ class LawnchairAlphabeticalAppsList<T>(
             }
         } catch (t: Throwable) {
             Log.w(TAG, "Failed to initialize hidden apps", t)
+        }
+        try {
+            context.launcher.lifecycleScope.launchWhenStarted {
+                ActiveTabState.currentTabId.collect { tabId ->
+                    if (currentTabId != tabId) {
+                        currentTabId = tabId
+                        onAppsUpdated()
+                    }
+                }
+            }
+        } catch (t: Throwable) {
+            Log.w(TAG, "Failed to observe active tab", t)
+        }
+        try {
+            context.launcher.lifecycleScope.launchWhenStarted {
+                tabService.getTabsFlow().collect { tabs ->
+                    tabList.clear()
+                    tabList.addAll(tabs)
+                    onAppsUpdated()
+                }
+            }
+        } catch (t: Throwable) {
+            Log.w(TAG, "Failed to observe tabs flow", t)
         }
         observeFolders()
     }
@@ -80,7 +110,16 @@ class LawnchairAlphabeticalAppsList<T>(
         mItemFilter = Predicate { info ->
             require(info is AppInfo) { "`info` must be an instance of `AppInfo`." }
             val componentKey = info.toComponentKey().toString()
-            (itemFilter?.test(info) != false) && !hiddenApps.contains(componentKey)
+            if (hiddenApps.contains(componentKey)) return@Predicate false
+            if (itemFilter?.test(info) == false) return@Predicate false
+
+            if (currentTabId != ActiveTabState.ALL_APPS_TAB_ID) {
+                val activeTab = tabList.find { it.id == currentTabId }
+                if (activeTab != null && !activeTab.itemComponentKeys.contains(componentKey)) {
+                    return@Predicate false
+                }
+            }
+            true
         }
         onAppsUpdated()
     }

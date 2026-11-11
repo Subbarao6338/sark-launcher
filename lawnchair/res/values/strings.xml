@@ -147,6 +147,14 @@
     <string name="app_drawer_folder_settings">App drawer folder</string>
     <string name="add_folder">Create folder</string>
     <string name="edit_folder">Edit folder</string>
+    <string name="app_drawer_tabs">App drawer tabs</string>
+    <string name="add_tab">Create tab</string>
+    <string name="edit_tab">Edit tab</string>
+    <string name="tab_manage_apps">Manage apps</string>
+    <string name="my_tab_label">New tab</string>
+    <string name="tabs_label">Tabs</string>
+    <string name="tabs_filter_duplicates">Filter duplicates</string>
+    <string name="all_apps_tab_label">All</string>
     <string name="add_label">Add</string>
     <string name="edit_label">Edit</string>
     <string name="apply_label">Apply</string>
@@ -744,6 +752,11 @@
     <string name="minus_one_unavailable">No feed apps installed</string>
     <string name="minus_one">Feed</string>
     <string name="feed_provider">Feed provider</string>
+    <string name="enable_homescreen_feed_label">Homescreen feed (widgets &amp; shortcuts)</string>
+    <string name="enable_homescreen_feed_desc">Show widgets and shortcuts feed on the left of home screen instead of Google feed</string>
+    <string name="homescreen_feed_title">Widgets &amp; Shortcuts</string>
+    <string name="add_widget_to_feed">Add widget</string>
+    <string name="feed_empty_hint">Tap \"Add widget\" above to add widgets and shortcuts to your feed</string>
 
     <string name="wallpaper_scrolling_label">Scroll wallpaper</string>
     <string name="wallpaper_depth_effect_label">Wallpaper depth effect</string>
