@@ -35,6 +35,7 @@ import app.lawnchair.LawnchairApp.Companion.showQuickstepWarningIfNecessary
 import app.lawnchair.compat.LawnchairQuickstepCompat
 import app.lawnchair.data.AppDatabase
 import app.lawnchair.data.wallpaper.service.WallpaperService
+import app.lawnchair.feed.HomescreenFeedOverlay
 import app.lawnchair.gestures.GestureController
 import app.lawnchair.gestures.VerticalSwipeTouchController
 import app.lawnchair.gestures.config.GestureHandlerConfig
@@ -97,6 +98,7 @@ import kotlinx.coroutines.launch
 
 class LawnchairLauncher : QuickstepLauncher() {
     private val defaultOverlay by unsafeLazy { OverlayCallbackImpl(this) }
+    private val homescreenFeedOverlay by unsafeLazy { HomescreenFeedOverlay(this) }
     private val prefs by unsafeLazy { PreferenceManager.getInstance(this) }
     private val preferenceManager2 by unsafeLazy { PreferenceManager2.getInstance(this) }
     private val insetsController: WindowInsetsControllerCompat by lazy {
@@ -165,6 +167,13 @@ class LawnchairLauncher : QuickstepLauncher() {
         prefs.feedProvider.subscribeChanges(this, defaultOverlay::reconnect)
         preferenceManager2.enableFeed.get().distinctUntilChanged().onEach { enable ->
             defaultOverlay.setEnableFeed(enable)
+        }.launchIn(scope = lifecycleScope)
+        preferenceManager2.enableHomescreenFeed.get().distinctUntilChanged().onEach { enableHomescreenFeed ->
+            if (enableHomescreenFeed) {
+                setLauncherOverlay(homescreenFeedOverlay)
+            } else {
+                defaultOverlay.reconnect()
+            }
         }.launchIn(scope = lifecycleScope)
         launcher.stateManager.addStateListener(clearSearchStateListener)
 
@@ -503,7 +512,10 @@ class LawnchairLauncher : QuickstepLauncher() {
         SmartspacerClient.close()
     }
 
-    override fun getDefaultOverlay(): LauncherOverlayManager = defaultOverlay
+    override fun getDefaultOverlay(): LauncherOverlayManager {
+        val useHomescreenFeed = preferenceManager2.enableHomescreenFeed.firstCached()
+        return if (useHomescreenFeed) homescreenFeedOverlay else defaultOverlay
+    }
 
     fun recreateIfNotScheduled() {
         if (sRestartFlags == 0) {

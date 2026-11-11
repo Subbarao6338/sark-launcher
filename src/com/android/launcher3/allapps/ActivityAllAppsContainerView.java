@@ -193,6 +193,7 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
     protected SearchUiManager mSearchUiManager;
     protected boolean mUsingTabs;
     protected RecyclerViewFastScroller mTouchHandler;
+    private app.lawnchair.allapps.DrawerTabsHeaderRow mDrawerTabsHeaderRow;
 
     /** {@code true} when rendered view is in search state instead of the scroll state. */
     private boolean mIsSearching;
@@ -336,7 +337,10 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
     }
 
     public List<AllAppsRow> getAdditionalHeaderRows() {
-        return List.of();
+        if (mDrawerTabsHeaderRow == null) {
+            mDrawerTabsHeaderRow = new app.lawnchair.allapps.DrawerTabsHeaderRow(mActivityContext);
+        }
+        return List.of(mDrawerTabsHeaderRow);
     }
 
     @Override

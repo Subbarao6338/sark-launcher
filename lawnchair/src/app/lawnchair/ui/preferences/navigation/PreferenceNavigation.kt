@@ -27,6 +27,7 @@ import app.lawnchair.ui.preferences.components.search.SearchProviderId
 import app.lawnchair.ui.preferences.components.search.SearchProviderPreferenceScreen
 import app.lawnchair.ui.preferences.destinations.AppDrawerFoldersPreference
 import app.lawnchair.ui.preferences.destinations.AppDrawerPreferences
+import app.lawnchair.ui.preferences.destinations.AppDrawerTabsPreference
 import app.lawnchair.ui.preferences.destinations.BackupAndRestorePreference
 import app.lawnchair.ui.preferences.destinations.CustomIconShapePreference
 import app.lawnchair.ui.preferences.destinations.DebugMenuPreferences
@@ -51,6 +52,7 @@ import app.lawnchair.ui.preferences.destinations.QuickstepPreferences
 import app.lawnchair.ui.preferences.destinations.SearchPreferences
 import app.lawnchair.ui.preferences.destinations.SearchProviderPreferences
 import app.lawnchair.ui.preferences.destinations.SelectAppsForDrawerFolder
+import app.lawnchair.ui.preferences.destinations.SelectAppsForDrawerTab
 import app.lawnchair.ui.preferences.destinations.SelectIconPreference
 import app.lawnchair.ui.preferences.destinations.ShapePreference
 import app.lawnchair.ui.preferences.destinations.SmartspacePreferences
@@ -176,6 +178,15 @@ fun PreferenceNavigation(
         composable<AppDrawerFolder>(
             deepLinks = getDeepLink(AppDrawerFolder),
         ) { AppDrawerFoldersPreference() }
+
+        composable<AppDrawerAppListToTab> { backStackEntry ->
+            val args = backStackEntry.arguments!!
+            val tabInfoId = args.getInt("id")
+            SelectAppsForDrawerTab(tabInfoId)
+        }
+        composable<AppDrawerTabs>(
+            deepLinks = getDeepLink(AppDrawerTabs),
+        ) { AppDrawerTabsPreference() }
 
         composable<Search>(
             deepLinks = getDeepLink(Search()),

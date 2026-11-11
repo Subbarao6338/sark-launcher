@@ -12,23 +12,38 @@ import app.lawnchair.data.folder.FolderItemEntity
 import app.lawnchair.data.folder.service.FolderDao
 import app.lawnchair.data.iconoverride.IconOverride
 import app.lawnchair.data.iconoverride.IconOverrideDao
+import app.lawnchair.data.tabs.TabInfoEntity
+import app.lawnchair.data.tabs.TabItemEntity
+import app.lawnchair.data.tabs.service.TabDao
 import app.lawnchair.data.wallpaper.Wallpaper
 import app.lawnchair.data.wallpaper.service.WallpaperDao
 import app.lawnchair.util.MainThreadInitializedObject
 import kotlinx.coroutines.runBlocking
 
-@Database(entities = [IconOverride::class, Wallpaper::class, FolderInfoEntity::class, FolderItemEntity::class], version = 3)
+@Database(
+    entities = [
+        IconOverride::class,
+        Wallpaper::class,
+        FolderInfoEntity::class,
+        FolderItemEntity::class,
+        TabInfoEntity::class,
+        TabItemEntity::class,
+    ],
+    version = 4,
+)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun iconOverrideDao(): IconOverrideDao
     abstract fun wallpaperDao(): WallpaperDao
     abstract fun folderDao(): FolderDao
+    abstract fun tabDao(): TabDao
 
     suspend fun checkpoint() {
         iconOverrideDao().checkpoint(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
         wallpaperDao().checkpoint(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
         folderDao().checkpoint(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
+        tabDao().checkpoint(SimpleSQLiteQuery("pragma wal_checkpoint(full)"))
     }
 
     fun checkpointSync() {
@@ -89,12 +104,45 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    """
+            CREATE TABLE IF NOT EXISTS `AppDrawerTabs` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `title` TEXT NOT NULL,
+                `hide` INTEGER NOT NULL,
+                `rank` INTEGER NOT NULL,
+                `timestamp` INTEGER NOT NULL
+            )
+                    """.trimIndent(),
+                )
+
+                database.execSQL(
+                    """
+            CREATE TABLE IF NOT EXISTS `AppDrawerTabItems` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `tabId` INTEGER NOT NULL,
+                `rank` INTEGER NOT NULL,
+                `item_info` TEXT,
+                `timestamp` INTEGER NOT NULL,
+                FOREIGN KEY(`tabId`) REFERENCES `AppDrawerTabs`(`id`) ON UPDATE CASCADE ON DELETE CASCADE
+            )
+                    """.trimIndent(),
+                )
+
+                database.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_AppDrawerTabItems_tabId` ON `AppDrawerTabItems` (`tabId`)",
+                )
+            }
+        }
+
         val INSTANCE = MainThreadInitializedObject { context ->
             Room.databaseBuilder(
                 context,
                 AppDatabase::class.java,
                 "preferences",
-            ).addMigrations(MIGRATION_1_3).addMigrations(MIGRATION_2_3).build()
+            ).addMigrations(MIGRATION_1_3).addMigrations(MIGRATION_2_3).addMigrations(MIGRATION_3_4).build()
         }
     }
 }
